@@ -1,5 +1,9 @@
 import { Type } from '@fastify/type-provider-typebox';
-import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema } from 'graphql';
+import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
+import { userType } from './types/user.js';
+import { postType } from './types/post.js';
+import { profileType } from './types/profile.js';
+import { memberType } from './types/memberType.js';
 // import { memberType } from './types/MemberType.js';
 
 export const gqlResponseSchema = Type.Partial(
@@ -21,52 +25,51 @@ export const createGqlResponseSchema = {
   ),
 };
 
-// const query = new GraphQLObjectType({
-//   name: "Query",
-//   fields: {
-//     user: {
-//       type: userType,
-//       args: {
-//         id: { type: new GraphQLNonNull(UUIDType) },
-//       },
-//     },
-//     users: {
-//       type: new GraphQLList(userType),
-//     },
-//     memberType: {
-//       type: memberType,
-//       args: {
-//         id: { type: new GraphQLNonNull(memberTypeIdEnum) },
-//       },
-//     },
-//     memberTypes: {
-//       type: new GraphQLList(memberType),
-//     },
-//     post: {
-//       type: postType,
-//       args: {
-//         id: { type: new GraphQLNonNull(UUIDType) },
-//       },
-//     },
-//     posts: {
-//       type: new GraphQLList(postType),
-//     },
-//     profile: {
-//       type: profileType,
-//       args: {
-//         id: { type: new GraphQLNonNull(UUIDType) },
-//       },
-//     },
-//     profiles: {
-//       type: new GraphQLList(profileType),
-//     },
-//   },
-// });
+const Query = new GraphQLObjectType({
+  name: 'Query',
+  fields: {
+    user: {
+      type: userType,
+      args: {
+        id: {type: new GraphQLNonNull(GraphQLString)}
+      }
+    },
+    users: {
+      type: new GraphQLList(userType)
+    },
+    post: {
+      type: postType,
+      args: {
+        id: {type: new GraphQLNonNull(GraphQLString)},
+      }
+    },
+    posts: {
+      type: new GraphQLList(postType),
+    },
+    profile: {
+      type: profileType,
+      args: {
+        id: {type: new GraphQLNonNull(GraphQLString)},
+      }
+    },
+    profiles: {
+      type: new GraphQLList(profileType),
+    },
+    memberType: {
+      type: memberType,
+      args: {
+        id: {type: new GraphQLNonNull(GraphQLString)},
+      }
+    },
+    memberTypes: {
+      type: new GraphQLList(memberType),
+    }
+  }
+})
 
-// export const gqlSchema = new GraphQLSchema({
-//   query
-// });
+const schema = new GraphQLSchema({
+  query: Query, 
+});
 
-// type Query {
-  
-// }
+export default schema;
+
