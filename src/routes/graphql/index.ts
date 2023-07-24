@@ -1,6 +1,9 @@
 import { FastifyPluginAsyncTypebox } from '@fastify/type-provider-typebox';
-import { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
-import { graphql } from 'graphql';
+import schema, { createGqlResponseSchema, gqlResponseSchema } from './schemas.js';
+import { buildSchema, graphql } from 'graphql';
+import { PrismaClient } from '@prisma/client';
+
+
 
 const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
   fastify.route({
@@ -13,7 +16,29 @@ const plugin: FastifyPluginAsyncTypebox = async (fastify) => {
       },
     },
     async handler(req) {
-      return {};
+    //   const gqlSchema = buildSchema(`query ($userId: UUID!) {
+    //     user(id: $userId) {
+    //         id
+    //         profile {
+    //             id
+    //             memberType {
+    //                 id
+    //             }
+    //         }
+    //         posts {
+    //             id
+    //         }
+    //     }
+    // }`);
+      const {data, errors} = await graphql({
+        schema: schema,
+        source: req.body.query,
+        variableValues: req.body.variables,
+        contextValue: {
+          prisma: PrismaClient
+        }
+      })
+      return { data, errors};
     },
   });
 };
