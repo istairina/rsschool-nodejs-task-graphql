@@ -1,8 +1,8 @@
 import { Type } from '@fastify/type-provider-typebox';
 import { GraphQLList, GraphQLNonNull, GraphQLObjectType, GraphQLSchema, GraphQLString } from 'graphql';
-import { userType } from './types/user.js';
-import { postType } from './types/post.js';
-import { profileType } from './types/profile.js';
+import { userType } from './types/userType.js';
+import { postType } from './types/postType.js';
+import { profileType } from './types/profileType.js';
 import { memberType } from './types/memberType.js';
 // import { memberType } from './types/MemberType.js';
 
