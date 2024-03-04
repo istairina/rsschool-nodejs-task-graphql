@@ -1,5 +1,6 @@
 import { Type } from '@fastify/type-provider-typebox';
 import {
+  GraphQLFieldConfig,
   GraphQLList,
   GraphQLNonNull,
   GraphQLObjectType,
@@ -10,8 +11,10 @@ import { userType } from './types/userType.js';
 import { postType } from './types/postType.js';
 import { profileType } from './types/profileType.js';
 // import { memberType } from './types/memberType';
-import { memberType } from './types/MemberType.js';
+import { MemberTypeId, MemberTypeIdType, memberType } from './types/MemberType.js';
 import { PrismaClient } from '@prisma/client';
+import { UserArgs } from '@prisma/client/runtime/library.js';
+// import { MemberTypeId } from '../member-types/schemas.js';
 
 export const gqlResponseSchema = Type.Partial(
   Type.Object({
@@ -32,7 +35,18 @@ export const createGqlResponseSchema = {
   ),
 };
 
-const Query = new GraphQLObjectType({
+export interface GraphQLContext {
+  prisma: PrismaClient;
+}
+
+const usersResolver: GraphQLFieldConfig<undefined, GraphQLContext, UserArgs> = {
+  type: new GraphQLList(new GraphQLNonNull(userType)),
+  resolve: async (_, __, { prisma }) => {
+    return prisma.user.findMany();
+  },
+};
+
+const query = new GraphQLObjectType({
   name: 'Query',
   fields: {
     user: {
@@ -40,48 +54,61 @@ const Query = new GraphQLObjectType({
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
-      resolve: async (_, args: { id: string }, prisma: PrismaClient) => {
+      resolve: async (_, args: { id: string }, { prisma }: GraphQLContext) => {
         return prisma.user.findUnique({ where: { id: args.id } });
       },
     },
-    users: {
-      type: new GraphQLList(userType),
-      resolve: async function (_, __, prisma: PrismaClient) {
-        return prisma.user.findMany();
-      },
-    },
+    users: usersResolver,
     post: {
       type: postType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
+      resolve: async (_, args: { id: string }, { prisma }: GraphQLContext) => {
+        return prisma.post.findUnique({ where: { id: args.id } });
+      },
     },
     posts: {
       type: new GraphQLList(postType),
+      resolve: async (_, __, { prisma }: GraphQLContext) => {
+        return prisma.post.findMany();
+      },
     },
     profile: {
       type: profileType,
       args: {
         id: { type: new GraphQLNonNull(GraphQLString) },
       },
+      resolve: async (_, args: { id: string }, { prisma }: GraphQLContext) => {
+        return prisma.profile.findUnique({ where: { id: args.id } });
+      },
     },
     profiles: {
       type: new GraphQLList(profileType),
+      resolve: async (_, __, { prisma }: GraphQLContext) => {
+        return prisma.profile.findMany();
+      },
     },
     memberType: {
       type: memberType,
       args: {
-        id: { type: new GraphQLNonNull(GraphQLString) },
+        id: { type: new GraphQLNonNull(MemberTypeIdType) },
+      },
+      resolve: async (_, args: { id: MemberTypeId }, { prisma }: GraphQLContext) => {
+        return prisma.memberType.findUnique({ where: { id: args.id } });
       },
     },
     memberTypes: {
       type: new GraphQLList(memberType),
+      resolve: async (_, __, { prisma }: GraphQLContext) => {
+        return prisma.memberType.findMany();
+      },
     },
   },
 });
 
 const gqlSchema = new GraphQLSchema({
-  query: Query,
+  query,
 });
 
 export default gqlSchema;
